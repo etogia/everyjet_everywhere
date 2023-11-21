@@ -1,0 +1,26 @@
+#!/bin/bash --login
+#$ -cwd              # Job will run in the current directory (where you ran qsub)
+#$ -o ./logs.build2
+#$ -e ./logs.build2
+#$ -pe smp.pe 8
+
+echo "Job is using $NGPUS GPU(s) with ID(s) $CUDA_VISIBLE_DEVICES and $NSLOTS CPU core(s)"
+
+# This example uses OpenMP for multi-core host code - tell OpenMP how many CPU cores to use.
+export OMP_NUM_THREADS=$NSLOTS
+export PYTHONUNBUFFERED=true
+
+# Load required environment
+source /mnt/iusers01/fse-ugpgt01/phy01/j22383et/.setup
+conda activate HyperGR
+echo $CONDA_PREFIX
+
+# Copy a directory of files from scratch to the GPU node's local NVMe storage
+if [ -d "/mnt/iusers01/fse-ugpgt01/phy01/j22383et/scratch/matched_small.root" ]; then
+    echo "Dataset exists, no need for copying."
+    #rm -r ~/localscratch/Hypergraph_data
+fi
+
+python /mnt/iusers01/fse-ugpgt01/phy01/j22383et/mphys/HyperGR_ttbar/BuildGraphs.py -f matched_calib_ttbar.root -c ./presets/ttbar_allhad.json -o ./datasets/output_build_2
+~
+~
